@@ -1,25 +1,35 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libuv_demo)
 
-#SET(CMAKE_CXX_FLAGS "-Wall -std=c++11")
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++11")
+
+include_directories(${PROJECT_SOURCE_DIR}/include  
+                    ${PROJECT_SOURCE_DIR}/3rd/json
+                    ${PROJECT_SOURCE_DIR}/3rd/libuv/include)
+
+link_directories(${PROJECT_SOURCE_DIR}/3rd/libuv/lib)
+
+find_package(glog)
+
+## link static lib
+# SET(CMAKE_CXX_COMPILER /usr/bin/clang++)
+# add_executable(main_api main_api.cpp)
+# target_link_libraries(main_api libuv_a.a pthread -ldl)
 
 
-#set(ENV{PKG_CONFIG_PATH} /usr/local/lib/pkgconfig)
-find_package(PkgConfig)
-pkg_search_module(libuv REQUIRED libuv)  #/usr/local/lib/pkgconfig/libuv.pc
+add_library(uv-cpp ./src/uv-cpp.cpp)
 
-#find_package(libuv REQUIRED)
-include_directories(${libuv_INCLUDE_DIRS} ./3rd) 
+#### demo
+add_executable(server ./demo/server.c)
+target_link_libraries(server  -luv)
 
-message("LIBUV_INCLUDE_DIRS:" ${libuv_INCLUDE_DIRS})
-message("LIBUV_LIBRARIES:" ${libuv_LIBRARIES})
+add_executable(client ./demo/client.c)
+target_link_libraries(client  -luv)
 
+## main-demo
+add_executable(main_api ./src/main_api.cpp)
+target_link_libraries(main_api -luv)
 
-add_executable(main_api main_api.cpp)
-target_link_libraries(main_api ${libuv_LIBRARIES})
-
-add_executable(server server.c)
-target_link_libraries(server ${libuv_LIBRARIES})
-
-add_executable(client client.c)
-target_link_libraries(client ${libuv_LIBRARIES})
+## main
+add_executable(main ./src/main.cpp ./src/server.cpp)
+target_link_libraries(main -luv glog uv-cpp)
